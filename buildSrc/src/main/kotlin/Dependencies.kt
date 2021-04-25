@@ -1,4 +1,5 @@
 // @formatter:off
+@file:Suppress("SpellCheckingInspection")
 
 object Versions {
     object Library {
@@ -43,6 +44,7 @@ object Versions {
         const val okHttp = "4.9.1" //https://github.com/square/okhttp/releases
         const val retrofit = "2.9.0" //https://github.com/square/retrofit/releases
         const val glide = "4.12.0" //https://github.com/bumptech/glide/releases
+        const val ktor = "1.5.3" //https://github.com/ktorio/ktor/releases
 
         // Phone Number Validation
         const val libPhoneNumber = "8.12.21" //https://github.com/MichaelRocks/libphonenumber-android/releases
@@ -101,6 +103,7 @@ object Dependencies {
 
     object Kotlin {
         const val Stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.Library.kotlin}"
+        const val Serialization = "org.jetbrains.kotlin:kotlin-serialization:${Versions.Library.kotlin}"
 
         object Coroutines {
             const val Core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.Library.coroutines}"
@@ -153,6 +156,7 @@ object Dependencies {
         const val LifecycleViewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.Library.xLifecycle}"
         const val LifecycleViewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:${Versions.Library.xLifecycle}"
         const val LifecycleCompiler = "androidx.lifecycle:lifecycle-compiler:${Versions.Library.xLifecycle}"
+        const val LifecycleCommon = "androidx.lifecycle:lifecycle-common-java8:${Versions.Library.xLifecycle}"
         const val SavedState = "androidx.savedstate:savedstate:${Versions.Library.xSavedState}"
         const val Navigation = "androidx.navigation:navigation-ui-ktx:${Versions.Library.xNavigation}"
         const val NavigationFragment = "androidx.navigation:navigation-fragment-ktx:${Versions.Library.xNavigation}"
@@ -188,6 +192,11 @@ object Dependencies {
         const val GlideCompiler = "com.github.bumptech.glide:compiler:${Versions.Library.glide}"
         const val Stetho = "com.facebook.stetho:stetho:${Versions.Library.stetho}"
         const val OkhttpInterceptorStetho = "com.facebook.stetho:stetho-okhttp3:${Versions.Library.stetho}"
+        const val Ktor = "io.ktor:ktor-client-core:${Versions.Library.ktor}"
+        const val KtorOkhttp = "io.ktor:ktor-client-okhttp:${Versions.Library.ktor}"
+        const val KtorWebsockets = "io.ktor:ktor-client-websockets:${Versions.Library.ktor}"
+        const val KtorSerialization = "io.ktor:ktor-client-serialization:${Versions.Library.ktor}"
+        const val KtorLogging = "io.ktor:ktor-client-logging:${Versions.Library.ktor}"
     }
 
     object Epoxy {

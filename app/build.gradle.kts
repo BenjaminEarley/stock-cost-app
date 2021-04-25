@@ -1,14 +1,10 @@
-import com.google.protobuf.gradle.generateProtoTasks
-import com.google.protobuf.gradle.protobuf
-import com.google.protobuf.gradle.protoc
-
 plugins {
     android("application")
     kotlin("android")
     kotlin("kapt")
+    kotlin("plugin.serialization") version Versions.Plugins.kotlin
+    kotlin("plugin.parcelize")
     androidx("navigation.safeargs.kotlin")
-    id("kotlin-parcelize")
-    id("com.google.protobuf") version Versions.Plugins.protobuf
     id("dagger.hilt.android.plugin")
 }
 
@@ -30,6 +26,18 @@ android {
                 arguments.plusAssign(arrayOf("room.schemaLocation" to "$projectDir/schemas"))
             }
         }
+
+        buildConfigField(
+            "String",
+            "BASE_API_URL",
+            "\"https://api.beta.getbux.com\""
+        )
+
+        buildConfigField(
+            "String",
+            "BASE_SOCKET_URL",
+            "\"https://rtf.beta.getbux.com\""
+        )
     }
     buildFeatures {
         viewBinding = true
@@ -42,6 +50,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs["debug"]
         }
     }
     compileOptions {
@@ -50,7 +59,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
-        freeCompilerArgs += listOf(
+        freeCompilerArgs = listOf(
             "-Xopt-in=kotlin.ExperimentalStdlibApi",
             "-Xopt-in=kotlin.time.ExperimentalTime",
             "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -61,6 +70,7 @@ android {
 
 dependencies {
     implementation(Dependencies.Kotlin.Stdlib)
+    implementation(Dependencies.Kotlin.Serialization)
     implementation(Dependencies.Kotlin.Coroutines.Core)
     implementation(Dependencies.Kotlin.Coroutines.Android)
     implementation(Dependencies.Androidx.Activity)
@@ -68,7 +78,6 @@ dependencies {
     implementation(Dependencies.Androidx.AppCompat)
     implementation(Dependencies.Androidx.Core)
     implementation(Dependencies.Androidx.CardView)
-    implementation(Dependencies.Androidx.DataStore)
     implementation(Dependencies.Androidx.Fragment)
     implementation(Dependencies.Androidx.RecyclerView)
     implementation(Dependencies.Androidx.ConstraintLayout)
@@ -77,40 +86,27 @@ dependencies {
     implementation(Dependencies.Androidx.LifecycleViewModel)
     implementation(Dependencies.Androidx.LifecycleViewModelSavedState)
     implementation(Dependencies.Androidx.LifecycleLiveData)
-    kapt(Dependencies.Androidx.LifecycleCompiler)
+    implementation(Dependencies.Androidx.LifecycleCommon)
     implementation(Dependencies.Androidx.SavedState)
     implementation(Dependencies.Androidx.Navigation)
     implementation(Dependencies.Androidx.NavigationFragment)
     implementation(Dependencies.Androidx.HiltNavigation)
     kapt(Dependencies.Androidx.HiltCompiler)
+    implementation(Dependencies.Androidx.RoomRuntime)
+    implementation(Dependencies.Androidx.Room)
+    kapt(Dependencies.Androidx.RoomCompiler)
     implementation(Dependencies.Google.Material)
     implementation(Dependencies.Google.DI.Hilt)
     kapt(Dependencies.Google.DI.HiltCompiler)
-    implementation(Dependencies.Google.Serializer.Protobuf)
-    implementation(Dependencies.Networking.Moshi)
-    implementation(Dependencies.Networking.MoshiAdapters)
-    kapt(Dependencies.Networking.MoshiCodegen)
     implementation(platform(Dependencies.Networking.OkhttpBom))
     implementation(Dependencies.Networking.Okhttp)
-    implementation(Dependencies.Networking.Retrofit)
-    implementation(Dependencies.Networking.RetrofitConverterMoshi)
+    implementation(Dependencies.Networking.Ktor)
+    implementation(Dependencies.Networking.KtorOkhttp)
+    implementation(Dependencies.Networking.KtorWebsockets)
+    implementation(Dependencies.Networking.KtorSerialization)
+    implementation(Dependencies.Networking.KtorLogging)
     implementation(Dependencies.Logging.Timber)
     debugImplementation(Dependencies.Networking.OkhttpLogger)
     testImplementation(Dependencies.Test.JUnit)
     testImplementation(Dependencies.Test.Truth)
-}
-
-protobuf {
-    protoc {
-        artifact = Dependencies.Google.Serializer.Protoc
-    }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.builtins {
-                create("java") {
-                    option("lite")
-                }
-            }
-        }
-    }
 }
