@@ -24,8 +24,15 @@
     <fragment
         android:id="@+id/productDetail"
         android:name="com.benjaminearley.stockcost.ui.productDetail.ProductDetailFragment"
+        android:label="{title}"
         tools:layout="@layout/fragment_product_detail">
-
+        <argument
+            android:name="product"
+            app:argType="com.benjaminearley.stockcost.data.Product" />
+        <argument
+            android:name="title"
+            android:defaultValue=""
+            app:argType="string" />
     </fragment>
 
 </navigation>

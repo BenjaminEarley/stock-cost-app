@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b3486e3b9c446fcd0a74c12573521cf8",
+    "identityHash": "86770d2281042bf7737fe3d908872eb8",
     "entities": [
       {
         "tableName": "products",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`security_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `display_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, `current_price_currency` TEXT NOT NULL, `current_price_decimals` INTEGER NOT NULL, `current_price_amount` TEXT NOT NULL, `closing_price_currency` TEXT NOT NULL, `closing_price_decimals` INTEGER NOT NULL, `closing_price_amount` TEXT NOT NULL, PRIMARY KEY(`security_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`security_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `display_name` TEXT NOT NULL, `updated_at` INTEGER NOT NULL, `current_price_currency` TEXT NOT NULL, `current_price_decimals` INTEGER NOT NULL, `current_price_amount` TEXT NOT NULL, `closing_price_currency` TEXT NOT NULL, `closing_price_decimals` INTEGER NOT NULL, `closing_price_amount` TEXT NOT NULL, PRIMARY KEY(`security_id`))",
         "fields": [
           {
             "fieldPath": "securityId",
@@ -27,18 +27,10 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
-          },
-          {
             "fieldPath": "updatedAt",
             "columnName": "updated_at",
             "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "notNull": true
           },
           {
             "fieldPath": "currentPrice.currency",
@@ -90,7 +82,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b3486e3b9c446fcd0a74c12573521cf8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '86770d2281042bf7737fe3d908872eb8')"
     ]
   }
 }

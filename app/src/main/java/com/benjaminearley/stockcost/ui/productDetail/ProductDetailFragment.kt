@@ -5,11 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.navArgs
 import com.benjaminearley.stockcost.databinding.FragmentProductDetailBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ProductDetailFragment : Fragment() {
+
+    private val args: ProductDetailFragmentArgs by navArgs()
 
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
@@ -25,7 +28,6 @@ class ProductDetailFragment : Fragment() {
             return root
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

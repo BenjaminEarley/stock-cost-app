@@ -32,6 +32,16 @@
         <item name="android:statusBarColor" tools:targetApi="l">?colorSecondary</item>
         <item name="android:navigationBarColor">?colorSecondary</item>
 
+        <item name="shapeAppearanceSmallComponent">
+            @style/ShapeAppearance.StockCost.SmallComponent
+        </item>
+        <item name="shapeAppearanceMediumComponent">
+            @style/ShapeAppearance.StockCost.MediumComponent
+        </item>
+        <item name="shapeAppearanceLargeComponent">
+            @style/ShapeAppearance.StockCost.LargeComponent
+        </item>
+
         <item name="textAppearanceHeadline1">@style/TextAppearance.StockCost.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.StockCost.Headline2</item>
         <item name="textAppearanceHeadline3">@style/TextAppearance.StockCost.Headline3</item>
@@ -46,5 +56,12 @@
         <item name="textAppearanceCaption">@style/TextAppearance.StockCost.Caption</item>
         <item name="textAppearanceOverline">@style/TextAppearance.StockCost.Overline</item>
 
+        <item name="floatingActionButtonStyle">@style/Widget.StockCost.FloatingActionButton</item>
+    </style>
+
+    <style name="ThemeOverlay.StockCost.FloatingActionButton" parent="">
+        <item name="colorSecondary">@color/green</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorOnSurface">@color/black</item>
     </style>
 </resources>

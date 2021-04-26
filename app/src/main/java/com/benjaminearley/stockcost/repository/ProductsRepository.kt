@@ -1,6 +1,7 @@
 package com.benjaminearley.stockcost.repository
 
 import arrow.core.Either
+import arrow.core.ValidatedNel
 import arrow.core.right
 import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
@@ -12,8 +13,10 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.hours
@@ -31,7 +34,8 @@ interface ProductsRepository {
         forceUpdate: Boolean = false
     ): Either<RepoError, Product>
 
-    suspend fun getProducts(): Flow<List<Product>>
+    suspend fun getSavedProducts(): Flow<List<Product>>
+    suspend fun updateAllProducts(): ValidatedNel<RepoError, Unit>
     suspend fun addNewProduct(productId: String): Either<RepoError, Unit>
 }
 
@@ -44,36 +48,36 @@ class ProductsRepositoryImpl @Inject constructor(
     override suspend fun getProduct(
         securityId: String,
         forceUpdate: Boolean
-    ): Either<RepoError, Product> {
+    ): Either<RepoError, Product> = withContext(Dispatchers.IO) {
         val product = persistence.productDao().getProduct(securityId).first()
 
-        return if (
-            !forceUpdate &&
-            product != null &&
-            product.updatedAt > System.currentTimeMillis() - 2.hours.inMilliseconds
-        ) {
-            product.right()
-        } else {
-            downloadProduct(securityId)
-        }
+        if (!forceUpdate && product != null && !product.isStale()) product.right()
+        else downloadProduct(securityId)
     }
 
 
-    override suspend fun getProducts(): Flow<List<Product>> {
-        return persistence.productDao().getProducts()
+    override suspend fun getSavedProducts(): Flow<List<Product>> =
+        withContext(Dispatchers.IO) { persistence.productDao().getProducts() }
+
+    override suspend fun updateAllProducts(): ValidatedNel<RepoError, Unit> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun addNewProduct(productId: String): Either<RepoError, Unit> =
-        downloadProduct(productId).void()
+        withContext(Dispatchers.IO) { downloadProduct(productId).void() }
 
-    private suspend fun downloadProduct(securityId: String) = Either
-        .catch { network.getProduct(securityId) }
-        .mapLeft { RepoError.NetworkError }
-        .map { it.toProduct() }
-        .map {
-            persistence.productDao().updateProduct(it)
-            it
-        }
+    private suspend fun downloadProduct(securityId: String) = withContext(Dispatchers.IO) {
+        Either
+            .catch { network.getProduct(securityId) }
+            .mapLeft { RepoError.NetworkError }
+            .map { it.toProduct() }
+            .map {
+                persistence.productDao().updateProduct(it)
+                it
+            }
+    }
+
+    private fun Product.isStale() = updatedAt < System.currentTimeMillis() - 2.hours.inMilliseconds
 }
 
 sealed class RepoError {
