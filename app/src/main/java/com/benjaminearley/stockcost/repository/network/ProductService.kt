@@ -1,7 +1,7 @@
 package com.benjaminearley.stockcost.repository.network
 
 import com.benjaminearley.stockcost.BuildConfig
-import com.benjaminearley.stockcost.repository.data.Product
+import com.benjaminearley.stockcost.repository.network.data.NetworkProduct
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,12 +19,12 @@ abstract class ProductServiceModule {
 }
 
 interface ProductService {
-    suspend fun getProduct(productId: String): Product
+    suspend fun getProduct(productId: String): NetworkProduct
 }
 
 @Singleton
 class ProductServiceImpl @Inject constructor(private val client: HttpClient) : ProductService {
-    override suspend fun getProduct(productId: String): Product = client
+    override suspend fun getProduct(productId: String): NetworkProduct = client
         .get("$baseApiUrl/core/23/products/$productId")
 
     companion object {

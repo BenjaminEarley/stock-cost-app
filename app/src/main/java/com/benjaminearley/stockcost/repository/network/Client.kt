@@ -27,7 +27,7 @@ object ClientModule {
             preconfigured = engine
         }
         defaultRequest {
-            header("Authorization", "Bearer $token")
+            header("Authorization", "Bearer $Token")
             header("Accept-Language", acceptLanguageHeader)
         }
         install(JsonFeature) {
@@ -53,7 +53,7 @@ object ClientModule {
             .let { list -> (0 until list.size()).map { list.get(it) } }
             .joinToString(",") { it.toLanguageTag() }
 
-    private const val token =
+    private const val Token =
         "eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoYWJsZSI6ZmFsc2UsInN1YiI6ImJiMGNkYTJiLWExMGUtNGVkMy1hZDV" +
                 "hLTBmODJiNGMxNTJjNCIsImF1ZCI6ImJldGEuZ2V0YnV4LmNvbSIsInNjcCI6WyJhcHA6bG9naW4iLCJ" +
                 "ydGY6bG9naW4iXSwiZXhwIjoxODIwODQ5Mjc5LCJpYXQiOjE1MDU0ODkyNzksImp0aSI6ImI3MzlmYjg" +

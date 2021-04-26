@@ -1,4 +1,4 @@
-package com.benjaminearley.stockcost.repository.data
+package com.benjaminearley.stockcost.repository.network.data
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class Product(
+data class NetworkProduct(
     @SerialName("symbol")
     val symbol: String,
     @SerialName("securityId")
@@ -15,7 +15,7 @@ data class Product(
     @SerialName("displayName")
     val displayName: String,
     @SerialName("currentPrice")
-    val currentPrice: Price,
+    val currentPrice: NetworkPrice,
     @SerialName("closingPrice")
-    val closingPrice: Price
+    val closingPrice: NetworkPrice
 ) : Parcelable

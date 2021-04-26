@@ -1,4 +1,4 @@
-package com.benjaminearley.stockcost.repository.data
+package com.benjaminearley.stockcost.repository.network.data
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class Price(
+data class NetworkPrice(
     @SerialName("currency")
     val currency: String,
     @SerialName("decimals")
