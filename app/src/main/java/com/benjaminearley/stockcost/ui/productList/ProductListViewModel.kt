@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.Either.Left
+import arrow.core.Either.Right
 import com.benjaminearley.stockcost.data.Product
 import com.benjaminearley.stockcost.repository.ProductsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,16 +32,27 @@ class ProductListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getSavedProducts().collect {
-                _products.value = it
+            repository.getSavedProducts().collect { products ->
+                _products.value = products.sortedBy { it.displayName }
             }
         }
     }
 
     fun addProduct() {
         viewModelScope.launch {
-            repository.addNewProduct("sb26500")
+
         }
 
+    }
+
+    fun deleteProduct(securityId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            when (repository.deleteProduct(securityId)) {
+                is Left -> errorMessageChannel.offer("Error")
+                is Right -> Unit
+            }
+            _isLoading.value = false
+        }
     }
 }

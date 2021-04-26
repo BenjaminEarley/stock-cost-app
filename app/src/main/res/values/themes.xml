@@ -14,8 +14,8 @@
         <item name="colorSecondary">@color/almost_black</item>
         <item name="colorSecondaryVariant">@color/black</item>
 
-        <item name="up">@color/green</item>
-        <item name="down">@color/yellow</item>
+        <item name="colorUp">@color/green</item>
+        <item name="colorDown">@color/yellow</item>
 
         <item name="android:colorBackground">@color/dark_gray</item>
         <item name="colorSurface">@color/gray</item>
@@ -31,6 +31,10 @@
 
         <item name="android:statusBarColor" tools:targetApi="l">?colorSecondary</item>
         <item name="android:navigationBarColor">?colorSecondary</item>
+        <item name="android:overScrollMode">never</item>
+        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">
+            @android:color/transparent
+        </item>
 
         <item name="shapeAppearanceSmallComponent">
             @style/ShapeAppearance.StockCost.SmallComponent

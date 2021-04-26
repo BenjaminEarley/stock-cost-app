@@ -2,9 +2,11 @@ package com.benjaminearley.stockcost.repository
 
 import arrow.core.Either
 import arrow.core.ValidatedNel
+import arrow.core.flatMap
 import arrow.core.right
 import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
+import com.benjaminearley.stockcost.repository.RepoError.*
 import com.benjaminearley.stockcost.repository.network.ProductService
 import com.benjaminearley.stockcost.repository.network.data.NetworkPrice
 import com.benjaminearley.stockcost.repository.network.data.NetworkProduct
@@ -37,6 +39,7 @@ interface ProductsRepository {
     suspend fun getSavedProducts(): Flow<List<Product>>
     suspend fun updateAllProducts(): ValidatedNel<RepoError, Unit>
     suspend fun addNewProduct(productId: String): Either<RepoError, Unit>
+    suspend fun deleteProduct(securityId: String): Either<RepoError, Unit>
 }
 
 @Singleton
@@ -49,10 +52,16 @@ class ProductsRepositoryImpl @Inject constructor(
         securityId: String,
         forceUpdate: Boolean
     ): Either<RepoError, Product> = withContext(Dispatchers.IO) {
-        val product = persistence.productDao().getProduct(securityId).first()
 
-        if (!forceUpdate && product != null && !product.isStale()) product.right()
-        else downloadProduct(securityId)
+        if (forceUpdate) downloadProduct(securityId)
+        else {
+            val product =
+                Either.catch { persistence.productDao().getProduct(securityId).first() }.orNull()
+
+            if (product != null && !product.isStale()) product.right()
+            else downloadProduct(securityId)
+        }
+
     }
 
 
@@ -64,24 +73,40 @@ class ProductsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addNewProduct(productId: String): Either<RepoError, Unit> =
-        withContext(Dispatchers.IO) { downloadProduct(productId).void() }
+        withContext(Dispatchers.IO) { downloadProduct(productId, newProductOnly = true).void() }
 
-    private suspend fun downloadProduct(securityId: String) = withContext(Dispatchers.IO) {
-        Either
-            .catch { network.getProduct(securityId) }
-            .mapLeft { RepoError.NetworkError }
-            .map { it.toProduct() }
-            .map {
-                persistence.productDao().updateProduct(it)
-                it
-            }
-    }
+    override suspend fun deleteProduct(securityId: String): Either<RepoError, Unit> =
+        withContext(Dispatchers.IO) {
+            Either
+                .catch { persistence.productDao().deleteProductById(securityId) }
+                .mapLeft { NotFound }
+                .void()
+        }
+
+    private suspend fun downloadProduct(securityId: String, newProductOnly: Boolean = false) =
+        withContext(Dispatchers.IO) {
+            Either
+                .catch { network.getProduct(securityId) }
+                .mapLeft { NetworkError }
+                .map { it.toProduct() }
+                .flatMap { product ->
+                    Either
+                        .catch {
+                            if (newProductOnly) persistence.productDao().addNewProduct(product)
+                            else persistence.productDao().updateProduct(product)
+                        }
+                        .mapLeft { DatabaseError }
+                        .map { product }
+                }
+        }
 
     private fun Product.isStale() = updatedAt < System.currentTimeMillis() - 2.hours.inMilliseconds
 }
 
 sealed class RepoError {
+    object NotFound : RepoError()
     object NetworkError : RepoError()
+    object DatabaseError : RepoError()
 }
 
 private fun NetworkProduct.toProduct() = Product(

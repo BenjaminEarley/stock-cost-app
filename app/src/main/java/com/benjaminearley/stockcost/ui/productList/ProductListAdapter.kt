@@ -16,16 +16,16 @@ import com.benjaminearley.stockcost.databinding.ItemProductBinding
 
 
 class ProductListAdapter(
-    private val onClick: (Product) -> Unit,
-    private val onDelete: (Product) -> Unit
+    private val onClick: (Product) -> Unit
 ) : ListAdapter<Product, ProductListAdapter.ProductListViewHolder>(ProductDiffCallback()) {
 
     class ProductListViewHolder(
         private val binding: ItemProductBinding,
-        private val onClick: (Product) -> Unit,
-        private val onDelete: (Product) -> Unit
+        private val onClick: (Product) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
+        var productId: String? = null
         fun bind(Product: Product) = binding.apply {
+            productId = Product.securityId
             name.text = Product.displayName
             identifier.text = Product.securityId
 
@@ -37,8 +37,7 @@ class ProductListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ProductListViewHolder(
         ItemProductBinding.inflate(LayoutInflater.from(parent.context), parent, false),
-        onClick,
-        onDelete
+        onClick
     )
 
     override fun onBindViewHolder(holder: ProductListViewHolder, position: Int) {
@@ -53,27 +52,6 @@ class ProductDiffCallback : DiffUtil.ItemCallback<Product>() {
 
     override fun areContentsTheSame(oldItem: Product, newItem: Product): Boolean {
         return oldItem == newItem
-    }
-}
-
-class MarginItemDecoration(
-    @Dimension(unit = Dimension.DP) private val dp: Int
-) : RecyclerView.ItemDecoration() {
-    override fun getItemOffsets(
-        outRect: Rect,
-        view: View,
-        parent: RecyclerView,
-        state: RecyclerView.State
-    ) {
-        val px = dp.dpToPxInt()
-        with(outRect) {
-            if (parent.getChildAdapterPosition(view) == 0) {
-                top = px
-            }
-            left = px
-            right = px
-            bottom = px
-        }
     }
 }
 

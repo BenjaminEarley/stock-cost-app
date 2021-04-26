@@ -1,6 +1,9 @@
 package com.benjaminearley.stockcost.repository.persistence
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.benjaminearley.stockcost.data.Product
 import kotlinx.coroutines.flow.Flow
 
@@ -15,11 +18,14 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun updateProduct(product: Product)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun addNewProduct(product: Product)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun updateProducts(product: List<Product>)
 
-    @Delete
-    fun deleteProduct(product: Product)
+    @Query("DELETE FROM products WHERE security_id = :securityId")
+    fun deleteProductById(securityId: String)
 
     @Query("DELETE FROM products")
     fun deleteAllProducts()

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="up" format="reference" />
-    <attr name="down" format="reference" />
+    <attr name="colorUp" format="reference" />
+    <attr name="colorDown" format="reference" />
 </resources>

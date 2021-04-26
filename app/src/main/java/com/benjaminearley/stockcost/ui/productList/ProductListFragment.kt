@@ -7,8 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.benjaminearley.stockcost.databinding.FragmentProductListBinding
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
@@ -21,13 +24,27 @@ class ProductListFragment : Fragment() {
     private val adapter = ProductListAdapter(
         onClick = { product ->
             findNavController().navigate(
-                ProductListFragmentDirections.openProductDetail(product, product.displayName)
+                ProductListFragmentDirections.openProductDetail(product.securityId)
             )
-        },
-        onDelete = { product ->
-            TODO()
         }
     )
+
+    private val deleteItemCallback: ItemTouchHelper.SimpleCallback =
+        object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
+                (viewHolder as? ProductListAdapter.ProductListViewHolder)?.productId?.let {
+                    viewModel.deleteProduct(it)
+                }
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,12 +60,13 @@ class ProductListFragment : Fragment() {
             }
 
             recyclerView.addItemDecoration(SpacingItemDecoration(dp = 8))
+            val itemTouchHelper = ItemTouchHelper(deleteItemCallback)
+            itemTouchHelper.attachToRecyclerView(recyclerView)
             recyclerView.adapter = adapter
 
             add.setOnClickListener {
-                viewModel.addProduct()
+                findNavController().navigate(ProductListFragmentDirections.addProduct())
             }
-
 
             return root
         }

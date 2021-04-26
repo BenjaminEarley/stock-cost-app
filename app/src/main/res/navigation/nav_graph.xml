@@ -19,20 +19,26 @@
             app:launchSingleTop="true"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+        <action
+            android:id="@+id/add_product"
+            app:destination="@id/productAdd" />
     </fragment>
 
     <fragment
         android:id="@+id/productDetail"
         android:name="com.benjaminearley.stockcost.ui.productDetail.ProductDetailFragment"
-        android:label="{title}"
+        android:label=""
         tools:layout="@layout/fragment_product_detail">
         <argument
-            android:name="product"
-            app:argType="com.benjaminearley.stockcost.data.Product" />
-        <argument
-            android:name="title"
-            android:defaultValue=""
+            android:name="security_id"
             app:argType="string" />
     </fragment>
+
+    <dialog
+        android:id="@+id/productAdd"
+        android:name="com.benjaminearley.stockcost.ui.productAdd.ProductAddDialogFragment"
+        android:label="@string/add_product"
+        tools:layout="@layout/dialog_product_add" />
 
 </navigation>

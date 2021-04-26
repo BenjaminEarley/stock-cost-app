@@ -31,6 +31,7 @@ object Versions {
         const val xSavedState = "1.1.0" //https://developer.android.com/jetpack/androidx/releases/savedstate
         const val xHilt = "1.0.0-beta01" //https://developer.android.com/jetpack/androidx/releases/hilt
         const val xEmoji = "1.1.0" //https://developer.android.com/jetpack/androidx/releases/emoji
+        const val xTransition = "1.4.1" //https://developer.android.com/jetpack/androidx/releases/transition
 
         // Firebase
         const val firebaseBom = "27.1.0" //https://firebase.google.com/support/release-notes/android
@@ -170,8 +171,9 @@ object Dependencies {
         const val HiltNavigation = "androidx.hilt:hilt-navigation-fragment:${Versions.Library.xHilt}"
         const val HiltWork = "androidx.hilt:hilt-work:${Versions.Library.xHilt}"
         const val HiltCompiler = "androidx.hilt:hilt-compiler:${Versions.Library.xHilt}"
-        const val emoji = "androidx.emoji:emoji:${Versions.Library.xEmoji}"
-        const val emojiAppCompat = "androidx.emoji:emoji-appcompat:${Versions.Library.xEmoji}"
+        const val Emoji = "androidx.emoji:emoji:${Versions.Library.xEmoji}"
+        const val EmojiAppCompat = "androidx.emoji:emoji-appcompat:${Versions.Library.xEmoji}"
+        const val Transition = "androidx.transition:transition-ktx:${Versions.Library.xTransition}"
     }
 
     object Util {

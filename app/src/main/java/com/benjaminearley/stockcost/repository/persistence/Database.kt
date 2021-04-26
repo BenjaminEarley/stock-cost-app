@@ -20,6 +20,7 @@ object DatabaseModule {
     fun provideNextDoorDb(@ApplicationContext context: Context): StockCostDatabase =
         Room
             .databaseBuilder(context, StockCostDatabase::class.java, DbName)
+            .createFromAsset("database/starting.db")
             .fallbackToDestructiveMigration()
             .build()
 
