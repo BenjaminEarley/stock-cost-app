@@ -8,9 +8,10 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
+import io.ktor.client.features.websocket.*
 import io.ktor.client.request.*
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -22,8 +23,11 @@ import javax.inject.Singleton
 object ClientModule {
     @Singleton
     @Provides
-    fun provideClient(engine: OkHttpClient): HttpClient = HttpClient(OkHttp) {
+    fun provideClient(engine: OkHttpClient, json: Json): HttpClient = HttpClient(OkHttp) {
         engine {
+            config {
+                followRedirects(true)
+            }
             preconfigured = engine
         }
         defaultRequest {
@@ -31,10 +35,6 @@ object ClientModule {
             header("Accept-Language", acceptLanguageHeader)
         }
         install(JsonFeature) {
-            val json = Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            }
             serializer = KotlinxSerializer(json)
         }
         install(Logging) {
@@ -45,6 +45,7 @@ object ClientModule {
             }
             level = LogLevel.ALL
         }
+        install(WebSockets)
     }
 
     private val acceptLanguageHeader: String =

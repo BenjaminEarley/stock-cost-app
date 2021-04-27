@@ -34,17 +34,26 @@ class ProductDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProductDetailBinding.inflate(inflater, container, false)
-
         with(binding) {
-
-            viewModel.isLoading.observe(viewLifecycleOwner) {
-                refresh.isRefreshing = it
-            }
-
             refresh.setOnRefreshListener {
                 viewModel.refresh()
             }
+            return root
+        }
+    }
 
+    override fun onStart() {
+        super.onStart()
+        with(binding) {
+            viewModel.isLoading.observe(viewLifecycleOwner) {
+                refresh.isRefreshing = it
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        with(binding) {
             viewModel.data.observe(viewLifecycleOwner) { data ->
 
                 TransitionManager.beginDelayedTransition(layout, Fade())
@@ -59,8 +68,6 @@ class ProductDetailFragment : Fragment() {
                     group.isInvisible = true
                 }
             }
-
-            return root
         }
     }
 

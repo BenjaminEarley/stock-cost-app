@@ -7,39 +7,55 @@ import com.benjaminearley.stockcost.R
 import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
 import com.benjaminearley.stockcost.repository.ProductsRepository
+import com.benjaminearley.stockcost.repository.network.SubscriptionService
 import com.benjaminearley.stockcost.ui.productDetail.State.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.NumberFormat
 import java.util.*
 import kotlin.time.milliseconds
 
 class ProductDetailViewModel @AssistedInject constructor(
     private val repository: ProductsRepository,
+    private val subscriptionService: SubscriptionService,
     @Assisted private val args: ProductDetailFragmentArgs
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(Loading())
 
+    private val liveAmount: Flow<String> = callbackFlow {
+        val result = subscriptionService.getProductPrice(args.securityId) {
+            sendBlocking(it)
+        }
+        when (result) {
+            is Left -> Timber.e(result.value)
+            is Right -> Timber.d("Closed Subscription Safely")
+        }
+    }
+
     val isLoading: LiveData<Boolean> =
         _state.map { it is Loading }.debounce(300.milliseconds).asLiveData()
 
-    val data: LiveData<ViewData?> = _state
-        .map {
-            it.data?.product?.run {
-                ViewData(
-                    title = displayName,
-                    subtitle = "$symbol | ${securityId.toUpperCase(Locale.getDefault())}",
-                    previousDayPrice = closingPrice.formatMoney(),
-                    currentPrice = currentPrice.formatMoney()
-                )
-            }
+    val data: LiveData<ViewData?> = combine(
+        _state,
+        liveAmount.onStart { emit("") }
+    ) { state, livePrice ->
+        state.data?.product?.run {
+            val amount =
+                livePrice.blankToNull()?.let { currentPrice.copy(amount = it) } ?: currentPrice
+            ViewData(
+                title = displayName,
+                subtitle = "$symbol | ${securityId.toUpperCase(Locale.getDefault())}",
+                previousDayPrice = closingPrice.formatMoney(),
+                currentPrice = amount.formatMoney()
+            )
         }
+    }
         .asLiveData()
 
     init {
@@ -99,6 +115,8 @@ private fun Price.formatMoney(): String =
         maximumFractionDigits = decimals
         format(amount.toDouble())
     }
+
+fun String?.blankToNull(): String? = if (this.isNullOrBlank()) null else this
 
 @AssistedFactory
 interface ProductDetailViewModelFactory {
