@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.Either.Left
 import arrow.core.Either.Right
+import com.benjaminearley.stockcost.R
 import com.benjaminearley.stockcost.data.Product
 import com.benjaminearley.stockcost.repository.ProductsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,8 +22,8 @@ class ProductListViewModel @Inject constructor(
     private val repository: ProductsRepository
 ) : ViewModel() {
 
-    private val errorMessageChannel: BroadcastChannel<String?> = BroadcastChannel(1)
-    val errorMessages: Flow<String?> = errorMessageChannel.asFlow()
+    private val errorMessageChannel: BroadcastChannel<Int?> = BroadcastChannel(1)
+    val errorMessages: Flow<Int?> = errorMessageChannel.asFlow()
 
     private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -49,7 +50,7 @@ class ProductListViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             when (repository.deleteProduct(securityId)) {
-                is Left -> errorMessageChannel.offer("Error")
+                is Left -> errorMessageChannel.offer(R.string.error_deleting_product)
                 is Right -> Unit
             }
             _isLoading.value = false

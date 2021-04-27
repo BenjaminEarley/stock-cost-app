@@ -1,5 +1,6 @@
 package com.benjaminearley.stockcost.repository
 
+import android.content.Context
 import arrow.core.Either
 import arrow.core.ValidatedNel
 import arrow.core.flatMap
@@ -14,6 +15,7 @@ import com.benjaminearley.stockcost.repository.persistence.StockCostDatabase
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -45,14 +47,14 @@ interface ProductsRepository {
 @Singleton
 class ProductsRepositoryImpl @Inject constructor(
     private val network: ProductService,
-    private val persistence: StockCostDatabase
+    private val persistence: StockCostDatabase,
+    @ApplicationContext private val context: Context
 ) : ProductsRepository {
 
     override suspend fun getProduct(
         securityId: String,
         forceUpdate: Boolean
     ): Either<RepoError, Product> = withContext(Dispatchers.IO) {
-
         if (forceUpdate) downloadProduct(securityId)
         else {
             val product =
@@ -100,7 +102,7 @@ class ProductsRepositoryImpl @Inject constructor(
                 }
         }
 
-    private fun Product.isStale() = updatedAt < System.currentTimeMillis() - 2.hours.inMilliseconds
+    private fun Product.isStale() = updatedAt < System.currentTimeMillis() - 1.hours.inMilliseconds
 }
 
 sealed class RepoError {

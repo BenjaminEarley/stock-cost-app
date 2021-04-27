@@ -6,12 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.benjaminearley.stockcost.databinding.FragmentProductListBinding
+import com.benjaminearley.stockcost.showSnackbar
 import dagger.hilt.android.AndroidEntryPoint
-
+import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
@@ -45,6 +47,14 @@ class ProductListFragment : Fragment() {
                 }
             }
         }
+
+    init {
+        lifecycleScope.launchWhenStarted {
+            viewModel.errorMessages.collect {
+                showSnackbar(it)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

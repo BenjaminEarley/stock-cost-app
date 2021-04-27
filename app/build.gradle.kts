@@ -36,7 +36,7 @@ android {
         buildConfigField(
             "String",
             "BASE_SOCKET_URL",
-            "\"https://rtf.beta.getbux.com\""
+            "\"rtf.beta.getbux.com\""
         )
     }
     buildFeatures {

@@ -1,61 +1,80 @@
 package com.benjaminearley.stockcost.ui.productDetail
 
+import androidx.annotation.AttrRes
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.*
 import arrow.core.Either.Left
 import arrow.core.Either.Right
 import com.benjaminearley.stockcost.R
 import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
+import com.benjaminearley.stockcost.formatMoney
 import com.benjaminearley.stockcost.repository.ProductsRepository
-import com.benjaminearley.stockcost.repository.network.SubscriptionService
+import com.benjaminearley.stockcost.repository.network.LivePriceService
 import com.benjaminearley.stockcost.ui.productDetail.State.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import java.text.NumberFormat
+import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 import kotlin.time.milliseconds
 
 class ProductDetailViewModel @AssistedInject constructor(
     private val repository: ProductsRepository,
-    private val subscriptionService: SubscriptionService,
+    private val livePriceService: LivePriceService,
     @Assisted private val args: ProductDetailFragmentArgs
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(Loading())
 
-    private val liveAmount: Flow<String> = callbackFlow {
-        val result = subscriptionService.getProductPrice(args.securityId) {
-            sendBlocking(it)
+    private val liveAmount: SharedFlow<String> = callbackFlow {
+        withContext(Dispatchers.IO) {
+            livePriceService.getProductPrice(args.securityId) { sendBlocking(it) }
         }
-        when (result) {
-            is Left -> Timber.e(result.value)
-            is Right -> Timber.d("Closed Subscription Safely")
-        }
-    }
+        awaitClose { }
+    }.shareIn(viewModelScope, SharingStarted.Lazily)
+
+    private val currentPrice: Flow<String> = merge(
+        _state.mapNotNull { it.data?.product?.currentPrice?.amount },
+        liveAmount
+    )
+
+    private val errorMessageChannel: BroadcastChannel<Int?> = BroadcastChannel(1)
+    val errorMessages: Flow<Int?> =
+        merge(
+            errorMessageChannel.asFlow(),
+            _state.filterIsInstance<Failure>().map { it.error }
+        )
 
     val isLoading: LiveData<Boolean> =
         _state.map { it is Loading }.debounce(300.milliseconds).asLiveData()
 
     val data: LiveData<ViewData?> = combine(
         _state,
-        liveAmount.onStart { emit("") }
+        currentPrice
     ) { state, livePrice ->
         state.data?.product?.run {
-            val amount =
-                livePrice.blankToNull()?.let { currentPrice.copy(amount = it) } ?: currentPrice
+            val currentPrice = currentPrice.copy(amount = livePrice)
+            val diff = getDiff(closingPrice, currentPrice)
             ViewData(
                 title = displayName,
                 subtitle = "$symbol | ${securityId.toUpperCase(Locale.getDefault())}",
                 previousDayPrice = closingPrice.formatMoney(),
-                currentPrice = amount.formatMoney()
+                currentPrice = currentPrice.formatMoney(),
+                diff = diff.formatPercent(),
+                ticker = diff.getTicker()
             )
         }
     }
+        .catch { errorMessageChannel.offer(R.string.error_update_product) }
         .asLiveData()
 
     init {
@@ -76,6 +95,24 @@ class ProductDetailViewModel @AssistedInject constructor(
         }
     }
 
+    private fun getDiff(closing: Price, current: Price): Double {
+        val a = closing.amount.toDouble()
+        val b = current.amount.toDouble()
+        return ((b - a) * 100.0) / a
+    }
+
+    private fun Double.getTicker() = when {
+        this > 0 -> ViewTicker.Up
+        this < 0 -> ViewTicker.Down
+        else -> ViewTicker.None
+    }
+
+    private fun Double.formatPercent(): String {
+        val value = BigDecimal(this).setScale(2, RoundingMode.HALF_UP)
+        val leadingChar = if (value.signum() != -1) "+" else ""
+        return "$leadingChar$value%"
+    }
+
     companion object {
         @Suppress("UNCHECKED_CAST")
         fun provideFactory(
@@ -93,8 +130,22 @@ data class ViewData(
     val title: String,
     val subtitle: String,
     val previousDayPrice: String,
-    val currentPrice: String
+    val currentPrice: String,
+    val diff: String,
+    val ticker: ViewTicker
 )
+
+enum class ViewTicker(@DrawableRes val icon: Int? = null, @AttrRes val tint: Int? = null) {
+    Up(
+        R.drawable.ic_up_24,
+        R.attr.colorUp
+    ),
+    Down(
+        R.drawable.ic_down_24,
+        R.attr.colorDown
+    ),
+    None
+}
 
 private data class StateData(
     val product: Product
@@ -107,16 +158,6 @@ private sealed class State {
     data class Success(override val data: StateData) : State()
     data class Failure(val error: Int, override val data: StateData? = null) : State()
 }
-
-private fun Price.formatMoney(): String =
-    NumberFormat.getCurrencyInstance().run {
-        currency = Currency.getInstance(this@formatMoney.currency)
-        minimumFractionDigits = decimals
-        maximumFractionDigits = decimals
-        format(amount.toDouble())
-    }
-
-fun String?.blankToNull(): String? = if (this.isNullOrBlank()) null else this
 
 @AssistedFactory
 interface ProductDetailViewModelFactory {

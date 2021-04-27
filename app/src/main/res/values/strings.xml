@@ -7,6 +7,10 @@
     <string name="product_already_added">Product Already Added</string>
     <string name="error_adding_product">Error Adding Product</string>
     <string name="error_loading_product">Unable To Show Product</string>
+    <string name="error_update_product">Unable To Update Product</string>
     <string name="previous_day">Previous Day</string>
     <string name="current">Current</string>
+    <string name="error_deleting_product">Error deleting product</string>
+    <string name="error_with_live_pricing">Error with live pricing</string>
+    <string name="ticker">Ticker</string>
 </resources>

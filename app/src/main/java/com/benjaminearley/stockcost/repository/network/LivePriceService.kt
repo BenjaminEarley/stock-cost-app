@@ -1,6 +1,7 @@
 package com.benjaminearley.stockcost.repository.network
 
 import arrow.core.Either
+import com.benjaminearley.stockcost.BuildConfig
 import com.benjaminearley.stockcost.repository.network.data.NetworkRequestSubscription
 import com.benjaminearley.stockcost.repository.network.data.NetworkSubscription
 import dagger.Binds
@@ -22,66 +23,59 @@ import javax.inject.Inject
 @InstallIn(SingletonComponent::class)
 abstract class SubscriptionServiceModule {
     @Binds
-    abstract fun bindSubscriptionService(
-        subscriptionService: SubscriptionServiceImpl
-    ): SubscriptionService
+    abstract fun bindLivePriceService(
+        livePriceService: LivePriceServiceImpl
+    ): LivePriceService
 }
 
-interface SubscriptionService {
+interface LivePriceService {
     suspend fun getProductPrice(
         securityId: String,
-        callback: (price: String) -> Unit
+        latestPrice: (price: String) -> Unit
     ): Either<Throwable, Unit>
 }
 
-class SubscriptionServiceImpl @Inject constructor(
+class LivePriceServiceImpl @Inject constructor(
     private val client: HttpClient,
     private val json: Json
-) : SubscriptionService {
+) : LivePriceService {
 
     override suspend fun getProductPrice(
         securityId: String,
-        callback: (price: String) -> Unit
+        latestPrice: (price: String) -> Unit
     ): Either<Throwable, Unit> = Either.catch {
         client.wss(
             method = HttpMethod.Get,
-            host = "rtf.beta.getbux.com",
+            host = BuildConfig.BASE_SOCKET_URL,
             path = "/subscriptions/me"
         ) {
+
+            val data = when (val status = incoming.receive()) {
+                is Frame.Text -> json.decodeFromString<NetworkSubscription>(status.readText())
+                else -> null
+            }
+
+            if (data?.type != "connect.connected") return@wss
 
             val request = json.encodeToString(
                 NetworkRequestSubscription(subscribeTo = listOf("trading.product.$securityId"))
             )
 
-            Timber.d(request)
             send(request)
 
-            val data = when (val status = incoming.consumeAsFlow().first()) {
-                is Frame.Text -> json.decodeFromString<NetworkSubscription>(status.readText())
-                else -> {
-                    Timber.d("Wrong Frame Type")
-                    null
-                }
-            }
-            Timber.d(data.toString())
-            if (data?.type != "connect.connected") return@wss
-            Timber.d("Channel being consumed")
             incoming
                 .consumeAsFlow()
                 .mapNotNull {
                     when (it) {
                         is Frame.Text ->
                             json.decodeFromString<NetworkSubscription>(it.readText())
-                        else -> {
-                            Timber.d("Wrong Frame Type")
-                            null
-                        }
+                        else -> null
                     }
                 }
                 .filter { it.type == "trading.quote" }
                 .collect { result ->
                     Timber.d(result.toString())
-                    result.body?.currentPrice?.let { callback(it) }
+                    result.body?.currentPrice?.let { latestPrice(it) }
                 }
         }
     }
