@@ -39,13 +39,6 @@ class ProductListViewModel @Inject constructor(
         }
     }
 
-    fun addProduct() {
-        viewModelScope.launch {
-
-        }
-
-    }
-
     fun deleteProduct(securityId: String) {
         viewModelScope.launch {
             _isLoading.value = true

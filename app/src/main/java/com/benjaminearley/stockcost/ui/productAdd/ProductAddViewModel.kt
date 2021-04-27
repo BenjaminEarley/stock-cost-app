@@ -8,7 +8,7 @@ import arrow.core.Either.Left
 import arrow.core.Either.Right
 import com.benjaminearley.stockcost.R
 import com.benjaminearley.stockcost.repository.ProductsRepository
-import com.benjaminearley.stockcost.repository.RepoError.DatabaseError
+import com.benjaminearley.stockcost.repository.StockCostError.DatabaseError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.Flow

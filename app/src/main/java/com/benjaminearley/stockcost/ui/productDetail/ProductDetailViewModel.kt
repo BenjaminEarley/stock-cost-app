@@ -6,9 +6,10 @@ import androidx.lifecycle.*
 import arrow.core.Either.Left
 import arrow.core.Either.Right
 import com.benjaminearley.stockcost.R
-import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
+import com.benjaminearley.stockcost.diff
 import com.benjaminearley.stockcost.formatMoney
+import com.benjaminearley.stockcost.formatPercent
 import com.benjaminearley.stockcost.repository.ProductsRepository
 import com.benjaminearley.stockcost.repository.network.LivePriceService
 import com.benjaminearley.stockcost.ui.productDetail.State.*
@@ -22,8 +23,6 @@ import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
 import kotlin.time.milliseconds
 
@@ -63,7 +62,7 @@ class ProductDetailViewModel @AssistedInject constructor(
     ) { state, livePrice ->
         state.data?.product?.run {
             val currentPrice = currentPrice.copy(amount = livePrice)
-            val diff = getDiff(closingPrice, currentPrice)
+            val diff = closingPrice diff currentPrice
             ViewData(
                 title = displayName,
                 subtitle = "$symbol | ${securityId.toUpperCase(Locale.getDefault())}",
@@ -93,24 +92,6 @@ class ProductDetailViewModel @AssistedInject constructor(
             is Right ->
                 Success(_state.value.data?.copy(product = result.value) ?: StateData(result.value))
         }
-    }
-
-    private fun getDiff(closing: Price, current: Price): Double {
-        val a = closing.amount.toDouble()
-        val b = current.amount.toDouble()
-        return ((b - a) * 100.0) / a
-    }
-
-    private fun Double.getTicker() = when {
-        this > 0 -> ViewTicker.Up
-        this < 0 -> ViewTicker.Down
-        else -> ViewTicker.None
-    }
-
-    private fun Double.formatPercent(): String {
-        val value = BigDecimal(this).setScale(2, RoundingMode.HALF_UP)
-        val leadingChar = if (value.signum() != -1) "+" else ""
-        return "$leadingChar$value%"
     }
 
     companion object {
@@ -145,6 +126,12 @@ enum class ViewTicker(@DrawableRes val icon: Int? = null, @AttrRes val tint: Int
         R.attr.colorDown
     ),
     None
+}
+
+private fun Double.getTicker() = when {
+    this > 0 -> ViewTicker.Up
+    this < 0 -> ViewTicker.Down
+    else -> ViewTicker.None
 }
 
 private data class StateData(

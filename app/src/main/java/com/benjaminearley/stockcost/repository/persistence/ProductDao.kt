@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ProductDao {
     @Query("SELECT * FROM products WHERE security_id=:securityId")
-    fun getProduct(securityId: String): Flow<Product?>
+    fun getProduct(securityId: String): Product
 
     @Query("SELECT * FROM products")
     fun getProducts(): Flow<List<Product>>
@@ -19,7 +19,7 @@ interface ProductDao {
     fun updateProduct(product: Product)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun addNewProduct(product: Product)
+    fun addProduct(product: Product)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun updateProducts(product: List<Product>)

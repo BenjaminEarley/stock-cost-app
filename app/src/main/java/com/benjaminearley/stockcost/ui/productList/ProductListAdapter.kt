@@ -1,6 +1,5 @@
 package com.benjaminearley.stockcost.ui.productList
 
-import android.content.res.Resources
 import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.benjaminearley.stockcost.data.Product
 import com.benjaminearley.stockcost.databinding.ItemProductBinding
+import com.benjaminearley.stockcost.dpToPxInt
 
 
 class ProductListAdapter(
@@ -81,12 +81,7 @@ class SpacingItemDecoration(
             ?.orientation
             ?: run {
                 throw IllegalStateException(
-                    "SpacingItemDecoration can only " +
-                            "be used with a LinearLayoutManager."
+                    "SpacingItemDecoration can only be used with a LinearLayoutManager."
                 )
             }
-}
-
-fun Int.dpToPxInt(): Int {
-    return (this * Resources.getSystem().displayMetrics.density).toInt()
 }
