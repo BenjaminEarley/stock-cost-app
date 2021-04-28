@@ -1,5 +1,6 @@
 package com.benjaminearley.stockcost.ui.productAdd
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.benjaminearley.stockcost.databinding.DialogProductAddBinding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -25,6 +28,12 @@ class ProductAddDialogFragment : BottomSheetDialogFragment() {
 
     init {
         lifecycleScope.launchWhenResumed { viewModel.dismissDialog.collect { dismiss() } }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return BottomSheetDialog(requireContext(), theme).apply {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        }
     }
 
     override fun onCreateView(

@@ -45,11 +45,12 @@ class ExampleUnitTest {
     @Test
     fun `Repo should use cache when valid else network`() = runBlocking {
         val currentTime = TestCurrentTime(10.days.toLongMilliseconds())
+        val testCount = 1_000
 
         Product
             .randomizer(currentTime.get() - 3.days.toLongMilliseconds(), currentTime.get())
-            .sequenceRandomizer()(Random(seed)).take(1_000)
-            .zip(NetworkProduct.randomizer.sequenceRandomizer()(Random(seed * 7)).take(1_000))
+            .sequenceRandomizer()(Random(seed)).take(testCount)
+            .zip(NetworkProduct.randomizer.sequenceRandomizer()(Random(seed * 7)).take(testCount))
             .filter { (a, b) -> a.securityId != b.securityId } // filtering race condition
             .forEach { (product, networkProduct) ->
                 val network = TestProductService(getProduct = { networkProduct })
