@@ -12,4 +12,6 @@ data class Price(
     val decimals: Int,
     @ColumnInfo(name = "amount")
     val amount: String
-) : Parcelable
+) : Parcelable {
+    companion object
+}

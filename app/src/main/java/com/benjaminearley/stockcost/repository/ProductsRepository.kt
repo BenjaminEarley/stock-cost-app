@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.ValidatedNel
 import arrow.core.flatMap
 import arrow.core.right
+import com.benjaminearley.stockcost.CurrentTime
 import com.benjaminearley.stockcost.data.Price
 import com.benjaminearley.stockcost.data.Product
 import com.benjaminearley.stockcost.repository.StockCostError.*
@@ -44,7 +45,8 @@ interface ProductsRepository {
 @Singleton
 class ProductsRepositoryImpl @Inject constructor(
     private val network: ProductService,
-    private val store: ProductStore
+    private val store: ProductStore,
+    private val time: CurrentTime
 ) : ProductsRepository {
 
     override suspend fun getProduct(
@@ -72,33 +74,32 @@ class ProductsRepositoryImpl @Inject constructor(
             .mapLeft { NotFound }
             .void()
 
-    private suspend fun downloadProduct(securityId: String, newProductOnly: Boolean = false) =
+    private suspend fun downloadProduct(
+        securityId: String,
+        newProductOnly: Boolean = false
+    ): Either<StockCostError, Product> =
         withContext(Dispatchers.IO) {
             Either
                 .catch { network.getProduct(securityId) }
                 .mapLeft { NetworkError }
                 .map { it.toProduct() }
                 .flatMap { product ->
-                    Either
-                        .catch {
-                            if (newProductOnly) store.addProduct(product)
-                            else store.updateProduct(product)
-                        }
-                        .mapLeft { DatabaseError }
-                        .map { product }
+                    if (newProductOnly) store.addProduct(product).mapLeft { DatabaseError }
+                    else store.updateProduct(product).mapLeft { DatabaseError }
                 }
         }
 
-    private fun Product.isStale() = updatedAt < System.currentTimeMillis() - 1.hours.inMilliseconds
-}
+    private fun Product.isStale() =
+        updatedAt < time.get() - 1.hours.toLongMilliseconds()
 
-private fun NetworkProduct.toProduct() = Product(
-    securityId = securityId,
-    symbol = symbol,
-    displayName = displayName,
-    updatedAt = System.currentTimeMillis(),
-    currentPrice = currentPrice.toPrice(),
-    closingPrice = closingPrice.toPrice()
-)
+    private fun NetworkProduct.toProduct() = Product(
+        securityId = securityId,
+        symbol = symbol,
+        displayName = displayName,
+        updatedAt = time.get(),
+        currentPrice = currentPrice.toPrice(),
+        closingPrice = closingPrice.toPrice()
+    )
+}
 
 private fun NetworkPrice.toPrice() = Price(currency, decimals, amount)

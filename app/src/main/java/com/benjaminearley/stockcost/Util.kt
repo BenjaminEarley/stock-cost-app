@@ -12,10 +12,16 @@ import androidx.core.content.res.use
 import androidx.fragment.app.Fragment
 import com.benjaminearley.stockcost.data.Price
 import com.google.android.material.snackbar.Snackbar
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.NumberFormat
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
 fun Fragment.showSnackbar(@StringRes messageRes: Int?) {
     val message = messageRes?.let { getString(it) } ?: return
@@ -55,4 +61,21 @@ fun Context.themeColor(
     ).use {
         it.getColor(0, Color.MAGENTA)
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class CurrentTimeModule {
+    @Binds
+    @Singleton
+    abstract fun bindCurrentTime(currentTime: CurrentTimeImpl): CurrentTime
+}
+
+interface CurrentTime {
+    fun get(): Long
+}
+
+@Singleton
+class CurrentTimeImpl @Inject constructor() : CurrentTime {
+    override fun get(): Long = System.currentTimeMillis()
 }

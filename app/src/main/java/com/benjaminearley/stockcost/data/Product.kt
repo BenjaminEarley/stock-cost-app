@@ -23,4 +23,6 @@ data class Product(
     val currentPrice: Price,
     @Embedded(prefix = "closing_price_")
     val closingPrice: Price
-) : Parcelable
+) : Parcelable {
+    companion object
+}
