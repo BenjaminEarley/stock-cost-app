@@ -38,3 +38,8 @@
 -keepclasseswithmembers class com.benjaminearley.stockcost.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+#-------------------------------------------------
+# Something is crashing from proguard, TODO
+#-------------------------------------------------
+-keep class com.benjaminearley.stockcost.** { *; }

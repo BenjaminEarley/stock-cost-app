@@ -84,7 +84,7 @@ object Versions {
     object Platform {
         const val sdk = 30
         const val minSdk = 23
-        const val buildTool = "29.0.3" //https://developer.android.com/studio/releases/build-tools#notes
+        const val buildTool = "30.0.3" //https://developer.android.com/studio/releases/build-tools#notes
     }
 
     object Plugins {
